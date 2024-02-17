@@ -6,18 +6,18 @@ import (
 	"image"
 	"image/color"
 	"image/png"
-	"math"
 	"os"
 	"strings"
 )
 
 const (
-	canvasSize = 1000
+	canvasSize = 3000
 )
 
 type point struct {
 	x, y int
 }
+
 type Turtle struct {
 	position  point
 	angle     float64
@@ -25,100 +25,11 @@ type Turtle struct {
 	penSize   point
 	penColor  color.RGBA
 	canva     Canva
+	penType   string // "circle" or "square"
 }
 
 type Canva [canvasSize][canvasSize]color.RGBA
 type ElasticCanva [][]color.RGBA
-
-func (t *Turtle) forward(distance float64) {
-	newX := t.position.x + int(distance*math.Cos(t.angle))
-	newY := t.position.y + int(distance*math.Sin(t.angle))
-
-	if t.isPenDown {
-		t.drawLine(point{x: newX, y: newY})
-	}
-
-	t.position.x = newX
-	t.position.y = newY
-}
-
-func (t *Turtle) right(degrees float64) {
-	t.angle += degrees * (math.Pi / 180)
-}
-
-func (t *Turtle) left(degrees float64) {
-	t.angle -= degrees * (math.Pi / 180)
-}
-
-func (t *Turtle) penUp() {
-	t.isPenDown = false
-}
-
-func (t *Turtle) penDown() {
-	t.isPenDown = true
-}
-
-func (t *Turtle) drawLine(end point) {
-	dx := end.x - t.position.x
-	dy := end.y - t.position.y
-
-	steps := int(math.Max(math.Abs(float64(dx)), math.Abs(float64(dy))))
-
-	if steps == 0 {
-		return
-	}
-
-	xIncrement := int(dx / steps)
-	yIncrement := int(dy / steps)
-
-	x := t.position.x
-	y := t.position.y
-
-	for i := 0; i < steps; i++ {
-		t.canva[int(y)][int(x)] = t.penColor
-
-		// draw a line with the pen size
-		for j := 0; j < t.penSize.x; j++ {
-			for k := 0; k < t.penSize.y; k++ {
-				t.canva[int(y)+j][int(x)+k] = t.penColor
-			}
-		}
-
-		x += xIncrement
-		y += yIncrement
-	}
-}
-func (t *Turtle) setPenSize(sizeX, sizeY int) {
-	t.penSize.x = sizeX
-	t.penSize.y = sizeY
-}
-
-func (t *Turtle) setPenColor(r, g, b uint8) {
-	t.penColor.R = r
-	t.penColor.G = g
-	t.penColor.B = b
-}
-
-func (t *Turtle) fill(x int, y int, color color.RGBA) {
-	floodFill(x, y, &t.canva, color)
-	fmt.Println("Filling at", x, y, "with color", color)
-
-}
-
-// //Flood fill algorithm
-func floodFill(x, y int, canvas *Canva, color color.RGBA) {
-	if x < 0 || y < 0 || x >= canvasSize || y >= canvasSize {
-		return
-	}
-	if canvas[y][x].A != 0 {
-		return
-	}
-	canvas[y][x] = color
-	floodFill(x+1, y, canvas, color)
-	floodFill(x-1, y, canvas, color)
-	floodFill(x, y+1, canvas, color)
-	floodFill(x, y-1, canvas, color)
-}
 
 func main() {
 	turtle := Turtle{
@@ -128,6 +39,7 @@ func main() {
 		penSize:   point{x: 1, y: 1},
 		penColor:  color.RGBA{R: 0, G: 0, B: 0, A: 255},
 		canva:     Canva{},
+		penType:   "square",
 	}
 
 	// Sample Logo program
@@ -166,6 +78,11 @@ func main() {
 			var distance float64
 			fmt.Sscanf(command, "fd %f", &distance)
 			turtle.forward(distance)
+		case "bk":
+			var distance float64
+			fmt.Sscanf(command, "bk %f", &distance)
+			turtle.forward(-distance)
+
 		case "rt":
 			var degrees float64
 			fmt.Sscanf(command, "rt %f", &degrees)
@@ -179,18 +96,28 @@ func main() {
 		case "pd":
 			turtle.penDown()
 		case "setpencolor":
-			var r, g, b uint8
-			fmt.Sscanf(command, "setpencolor [%d %d %d]", &r, &g, &b)
-			turtle.setPenColor(r, g, b)
+			var r, g, b, a uint8
+			//a is optional
+			if len(cmdParts) == 5 {
+				fmt.Sscanf(command, "setpencolor [%d %d %d %d]", &r, &g, &b, &a)
+			} else {
+				fmt.Sscanf(command, "setpencolor [%d %d %d]", &r, &g, &b)
+				a = 255
+			}
+			turtle.setPenColor(r, g, b, a)
+
 		case "setpensize":
 			var sizeX, sizeY int
 			fmt.Sscanf(command, "setpensize [%d %d]", &sizeX, &sizeY)
 			turtle.setPenSize(sizeX, sizeY)
+		case "setpentype":
+			var penType string
+			fmt.Sscanf(command, "setpentype %s", &penType)
+			turtle.penType = penType
 		case "fill":
 			var r, g, b uint8
 			fmt.Sscanf(command, "fill [%d %d %d]", &r, &g, &b)
 			turtle.fill(turtle.position.x, turtle.position.y, color.RGBA{R: r, G: g, B: b, A: 255})
-
 		}
 	}
 
@@ -209,29 +136,6 @@ func main() {
 		newImage = append(newImage, row)
 	}
 	savePNG(newImage, imageFileName)
-
-	//print a debug output too (content: the array content)
-	fileName2 := filePath[:len(filePath)-4] + ".debug.txt"
-	file2, err := os.Create(fileName2)
-	if err != nil {
-		fmt.Println("Error creating file:", err)
-		return
-	}
-
-	defer file2.Close()
-
-	for _, row := range newImage {
-		for _, pixel := range row {
-			if pixel != (color.RGBA{}) {
-				file2.WriteString("X")
-			} else {
-				file2.WriteString(" ")
-			}
-		}
-		file2.WriteString("\n")
-	}
-	file2.WriteString(fmt.Sprintf("minX: %d, minY: %d, maxX: %d, maxY: %d", minX, minY, maxX, maxY))
-	fmt.Println("Debug file saved successfully.")
 
 }
 
@@ -273,6 +177,21 @@ func findBoundingBox(imageArray Canva) (int, int, int, int) {
 		}
 	}
 	return minX, minY, maxX, maxY
+}
+
+// //Flood fill algorithm
+func floodFill(x, y int, canvas *Canva, color color.RGBA) {
+	if x < 0 || y < 0 || x >= canvasSize || y >= canvasSize {
+		return
+	}
+	if canvas[y][x].A != 0 {
+		return
+	}
+	canvas[y][x] = color
+	floodFill(x+1, y, canvas, color)
+	floodFill(x-1, y, canvas, color)
+	floodFill(x, y+1, canvas, color)
+	floodFill(x, y-1, canvas, color)
 }
 
 func savePNG(imageArray [][]color.RGBA, filename string) {

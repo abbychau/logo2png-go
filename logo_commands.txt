@@ -1,14 +1,15 @@
 setpencolor [255 0 0]
-setpensize [3 3]
-fd 50
+setpentype circle
+setpensize [16 5]
+fd 200
 rt 90
 fd 50
 rt 90
-fd 50
+fd 200
 rt 90
 fd 50
 rt 90
 pu
 rt 45
-fd 10
+fd 60
 fill [55 35 45]

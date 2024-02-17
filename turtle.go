@@ -101,5 +101,55 @@ func (t *Turtle) setPenColor(r, g, b, a uint8) {
 }
 
 func (t *Turtle) fill(x int, y int, color color.RGBA) {
-	floodFill(x, y, &t.canva, color)
+	if x < 0 || y < 0 || x >= canvasSize || y >= canvasSize {
+		return
+	}
+	if t.canva[y][x].A != 0 {
+		return
+	}
+	t.canva[y][x] = color
+	t.fill(x+1, y, color)
+	t.fill(x-1, y, color)
+	t.fill(x, y+1, color)
+	t.fill(x, y-1, color)
+}
+
+func findBoundingBox(imageArray Canva) (int, int, int, int) {
+	minX := -1
+	minY := -1
+	maxX := -1
+	maxY := -1
+
+	for y, row := range imageArray {
+		for x, pixel := range row {
+			if pixel != (color.RGBA{}) {
+				if minX == -1 {
+					minX = x
+				}
+				if minY == -1 {
+					minY = y
+				}
+				if maxX == -1 {
+					maxX = x
+				}
+				if maxY == -1 {
+					maxY = y
+				}
+
+				if x < minX {
+					minX = x
+				}
+				if x > maxX {
+					maxX = x
+				}
+				if y < minY {
+					minY = y
+				}
+				if y > maxY {
+					maxY = y
+				}
+			}
+		}
+	}
+	return minX, minY, maxX, maxY
 }

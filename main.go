@@ -116,7 +116,7 @@ func main() {
 	// output a png file, with the same name as the input file without the extension (<input>.png)
 
 	//create file
-	imageFileName := filePath[:len(filePath)-4] + ".png"
+	imageFileName := filePath[:len(filePath)-4] + ".png" //TODO: -4 is a magic number
 	newImage := ElasticCanva{}
 	for y := minY; y <= maxY; y++ {
 		row := []color.RGBA{}
@@ -127,61 +127,6 @@ func main() {
 	}
 	savePNG(newImage, imageFileName)
 
-}
-
-func findBoundingBox(imageArray Canva) (int, int, int, int) {
-	minX := -1
-	minY := -1
-	maxX := -1
-	maxY := -1
-
-	for y, row := range imageArray {
-		for x, pixel := range row {
-			if pixel != (color.RGBA{}) {
-				if minX == -1 {
-					minX = x
-				}
-				if minY == -1 {
-					minY = y
-				}
-				if maxX == -1 {
-					maxX = x
-				}
-				if maxY == -1 {
-					maxY = y
-				}
-
-				if x < minX {
-					minX = x
-				}
-				if x > maxX {
-					maxX = x
-				}
-				if y < minY {
-					minY = y
-				}
-				if y > maxY {
-					maxY = y
-				}
-			}
-		}
-	}
-	return minX, minY, maxX, maxY
-}
-
-// //Flood fill algorithm
-func floodFill(x, y int, canvas *Canva, color color.RGBA) {
-	if x < 0 || y < 0 || x >= canvasSize || y >= canvasSize {
-		return
-	}
-	if canvas[y][x].A != 0 {
-		return
-	}
-	canvas[y][x] = color
-	floodFill(x+1, y, canvas, color)
-	floodFill(x-1, y, canvas, color)
-	floodFill(x, y+1, canvas, color)
-	floodFill(x, y-1, canvas, color)
 }
 
 func savePNG(imageArray [][]color.RGBA, filename string) {

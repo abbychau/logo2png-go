@@ -1,0 +1,14 @@
+setpencolor [255 0 0]
+setpensize [3 3]
+fd 50
+rt 90
+fd 50
+rt 90
+fd 50
+rt 90
+fd 50
+rt 90
+pu
+rt 45
+fd 10
+fill [55 35 45]

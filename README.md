@@ -5,26 +5,28 @@ This is a simple Python script that converts logo(UCBLogo / Berkeley Logo) files
 ## Usage
 
 ```bash
-go run main.go logo_commands.txt
+go run . logo_commands.txt 
+# or `go build` and run `logo2png logo_commands.txt`
 ```
 Then, you will get a PNG file named `logo_commands.png` under the same directory.
 
 ## Example
 
-```bash
+```log
 setpencolor [255 0 0]
-setpensize [3 3]
-fd 50
+setpentype circle
+setpensize [16 5]
+fd 200
 rt 90
 fd 50
 rt 90
-fd 50
+fd 200
 rt 90
 fd 50
 rt 90
 pu
 rt 45
-fd 10
+fd 60
 fill [55 35 45]
 ```
 

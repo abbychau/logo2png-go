@@ -18,16 +18,6 @@ type point struct {
 	x, y int
 }
 
-type Turtle struct {
-	position  point
-	angle     float64
-	isPenDown bool
-	penSize   point
-	penColor  color.RGBA
-	canva     Canva
-	penType   string // "circle" or "square"
-}
-
 type Canva [canvasSize][canvasSize]color.RGBA
 type ElasticCanva [][]color.RGBA
 
@@ -215,5 +205,5 @@ func savePNG(imageArray [][]color.RGBA, filename string) {
 		fmt.Println("Error encoding PNG:", err)
 		return
 	}
-	fmt.Println("PNG saved successfully.")
+	fmt.Println("Image saved to", filename)
 }

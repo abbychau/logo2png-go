@@ -5,6 +5,16 @@ import (
 	"math"
 )
 
+type Turtle struct {
+	position  point
+	angle     float64
+	isPenDown bool
+	penSize   point
+	penColor  color.RGBA
+	canva     Canva
+	penType   string // "circle" or "square"
+}
+
 func (t *Turtle) forward(distance float64) {
 	newX := t.position.x + int(distance*math.Cos(t.angle))
 	newY := t.position.y + int(distance*math.Sin(t.angle))

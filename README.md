@@ -1,6 +1,6 @@
 # Logo2PNG
 
-This is a simple Python script that converts logo(UCBLogo / Berkeley Logo) files to PNG images.
+This is a program that converts logo(UCBLogo / Berkeley Logo) files to PNG images.
 
 ## Usage
 
